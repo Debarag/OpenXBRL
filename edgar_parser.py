@@ -99,6 +99,9 @@ class AccountingParser() :
                 if( form[0:2] != '10' ) :
                     continue
 
+                filing_period_end_date = item['end']
+                filing_date            = item['filed']
+
                 fy_year = item['fy']
                 # Remove bad data (there are some year=0 and other nonsense)
                 if( (fy_year == None) or (fy_year == '') ) :
@@ -118,8 +121,9 @@ class AccountingParser() :
                 index = (fy_year,fy_quarter,form)
                 value = item['val']
                 
-                row = filings.get(index)
-                if( row == None ) :
+                filing = filings.get(index)
+                if( filing == None ) :
+                    # Create new filing record
                     new_q = fy_quarter
                     if( new_q == 0 ) :
                         new_q = 4       # Put yearly results in Q4
@@ -128,10 +132,13 @@ class AccountingParser() :
                                      ,  'FY_quarter'         : fy_quarter 
                                      ,  'form'               : form 
                                      ,  'FY_date'            : f"{fy_year}Q{new_q}"
-                                     ,  accounting_parameter : value
+                                     ,  'CY_period_ended'    : filing_period_end_date
+                                     ,  'CY_filing_date'     : filing_date
                                      }
-                else : 
-                    row[accounting_parameter] = value
+                    filing = filings[index]
+
+                # Add the parameter to the filing record
+                filing[accounting_parameter] = value
         # end for
 
         # STEP 2: 
@@ -231,7 +238,8 @@ class AccountingParser() :
         progress_update_at = max(1, int(len(ciks)/50))
         cik_progress       = 0
 
-        column_names = ['FY_year', 'FY_quarter', 'form', 'FY_date'] + AccountingParser._output_params
+        column_names = ['FY_year', 'FY_quarter', 'form', 'FY_date', 'CY_period_ended', 'CY_filing_date'] \
+                        + AccountingParser._output_params
         with open(outputfile, "w") as f:
             s = '"CIK","entityName"'
             for param in column_names:
