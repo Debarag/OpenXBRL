@@ -10,42 +10,23 @@ import datetime
 
 class AccountingParser() :
 
-    # Things we want for calculating our params
-    _selected_parameters = [    'EntityPublicFloat'
-                            ,   'Assets'
-                            ,   'CurrentAssets'
-                            ,   'CostsAndExpenses'
-                            ,   'DebtCurrent'
-                            ,   'DeferredIncomeTaxExpenseBenefit'
-                            ,   'DeferredTaxAssetsLiabilitiesNet'
-                            ,   'DividendsCommonStock'
-                            ,   'EarningsPerShareBasic'
-                            ,   'EarningsPerShareDiluted'
-                            ,   'NetIncomeLoss'
-                            ,   'IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest'
-                            ,   'Liabilities'
-                            ,   'LiabilitiesAndStockholdersEquity'
-                            ,   'ProfitLoss'
-                            ,   'GrossProfit'
-                            ,   'OperatingIncomeLoss'
-                            ,   'Revenues'
-                            ,   'RevenueFromContractWithCustomerExcludingAssessedTax'
-                            ,   'SellingGeneralAndAdministrativeExpense'
-                            ,   'TreasuryStockCommonValue'
-                            ]        
-
-    # Columns to print to CSV
-    _output_params  = [     '_Liabilities'
-                       ,    '_Assets'
-                       ,    '_Profits'
-                       ,    '_Dividends'
-                       ,    '_Revenues'
-                       ,    '_Costs'
-                       ,    '_EntityPublicFloat'
-                       ]
+    # Basic income statement concepts
+    #################################
+    #  Revenue
+    #    CostOfRevenue
+    #  Gross Profit
+    #  Expenses
+    #  NetIncome ( Profit )
+    #  Earnings per Share (Basic & Diluted)
 
     def __init__(self, workingdir : str ) :
         self._workingdir = workingdir
+
+        # import field mappings, assume in JSON file in same dir as code
+        with open("concept_handling.json", "r") as f:
+            self._concept_handling = json.load(f)
+
+        self._output_params = list( self._concept_handling.keys() )
 
 
     def parse_file( self, filename : str ) -> dict :
@@ -81,13 +62,9 @@ class AccountingParser() :
             if( entry != None ) :
                 entries['EntityPublicFloat'] = entry
 
-        # Restrict entries to things we want
-        selected_parameters = AccountingParser._selected_parameters      
-        for accounting_parameter in selected_parameters:
+        for accounting_parameter in entries:
             
             entry = entries.get(accounting_parameter)
-            if( entry == None ) :
-                continue
 
             # TBD: Check for non-USD currency
             #  Also, some units are 'shares'; we ignore those
@@ -163,40 +140,28 @@ class AccountingParser() :
 
                 # Add the parameter to the filing record
                 filing[accounting_parameter] = value
-
-        # end for
+        # end for 
 
         # STEP 2: 
         # Go through form by form and calculate the accounting concepts we want
         
         MSG_NaN = "NaN"
-        MSG_NA  = "NA"
 
         # Mapping between accounting concepts and fields
         #   Code will try to go down the list for each concept until it finds one
-        HANDLING_FIELDS     = 0
-        HANDLING_MISSING    = 1
-        field_handling = { 
-                            '_Liabilities'  : [['Liabilities', 'LiabilitiesAndStockholdersEquity'], MSG_NaN]
-                        ,   '_Assets'       : [['Assets'], MSG_NaN]
-                        ,   '_Profits'      : [['GrossProfit', 'ProfitLoss', 'OperatingIncomeLoss', 'NetIncomeLoss'], MSG_NaN]
-                        ,   '_Revenues'     : [['Revenues', 'RevenueFromContractWithCustomerExcludingAssessedTax'], MSG_NaN]
-                        ,   '_Costs'        : [['CostsAndExpenses'], MSG_NaN]
-
-                        ,   '_Dividends'    : [['DividendsCommonStock', 'DividendsCommonStockCash'], 0]
-                         }
+        concept_handling = self._concept_handling
 
         for ndx in filings.keys() :
             row = filings[ndx]
 
-            for entry_name in field_handling.keys() :
+            for entry_name in concept_handling.keys() :
                 row[entry_name] = None
-                for field_name in field_handling[entry_name][HANDLING_FIELDS] :
+                for field_name in concept_handling[entry_name]['map'] :
                     if( row.get(field_name) != None ) :
                         row[entry_name] = row[field_name]
                         break
                 if( row[entry_name] == None ) :
-                    row[entry_name] = field_handling[entry_name][HANDLING_MISSING]
+                    row[entry_name] = concept_handling[entry_name]['on_missing']
                     if( row[entry_name] == MSG_NaN ) :
                         print (f"[Warning] CIK:{cik} Form:{row['form']} Year:{row['FY_year']} Quarter:{row['FY_quarter']} is missing {entry_name}")
 
@@ -206,7 +171,7 @@ class AccountingParser() :
                 row[entry_name] = row['EntityPublicFloat']
             elif( row['form'].startswith("10-Q") ) :
                 # 10-Q's don't have this value
-                row[entry_name] = MSG_NA
+                row[entry_name] = "NA"
             else :
                 row[entry_name] = MSG_NaN
                 print (f"[Warning] CIK:{cik} Form:{row['form']} Year:{row['FY_year']} is missing EntityPublicFloat")
@@ -226,7 +191,7 @@ class AccountingParser() :
                 year_value  = row[ series_name ]
                 
                 # Keep old values as _actual
-                row[ series_name + '_actual' ] = row[series_name]
+                row[ series_name + '_annual' ] = row[series_name]
 
                 # impute quarterly value on this FY 10-K
                 #  by subtracting the FY 10-Q values from the year's
@@ -264,7 +229,7 @@ class AccountingParser() :
         cik_progress       = 0
 
         column_names = ['FY_year', 'FY_quarter', 'form', 'FY_date', 'CY_date', 'CY_filing_date'] \
-                        + AccountingParser._output_params
+                        + self._output_params
         with open(outputfile, "w") as f:
             s = '"CIK","entityName"'
             for param in column_names:

@@ -1,0 +1,32 @@
+{ 
+"_Liabilities"      : 
+    {
+        "map"           : ["Liabilities", "LiabilitiesAndStockholdersEquity"]
+    ,   "on_missing"    : "NaN"
+    }
+,   "_Assets"           :
+    {
+        "map"           : ["Assets"]
+    ,   "on_missing"    : "NaN"
+    }
+,   "_Profits"          :
+    {
+        "map"           : ["GrossProfit", "ProfitLoss", "OperatingIncomeLoss", "NetIncomeLoss"]
+    ,   "on_missing"    : "NaN"
+    }
+,   "_Revenues"             : 
+    {
+        "map"           : ["Revenues", "RevenueFromContractWithCustomerExcludingAssessedTax"]
+    ,   "on_missing"    : "NaN"
+    }
+,   "_Costs"                : 
+    {
+        "map"           : ["CostsAndExpenses"]
+    ,   "on_missing"    : "NaN"
+    }
+,   "_Dividends"            : 
+    {
+        "map"           : ["DividendsCommonStock", "DividendsCommonStockCash"]
+    ,   "on_missing"    : 0
+    }
+}
