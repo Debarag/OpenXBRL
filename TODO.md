@@ -20,6 +20,7 @@ should clearly distinguish quarterly and annual (if appropriate) amounts.
 
 # Things to do
 * Determine accounting concepts we want and find mappings for them. Put into JSON file.
+    
     -- Income (or PnL) statement
         Revenue
             CostOfRevenue
@@ -27,11 +28,29 @@ should clearly distinguish quarterly and annual (if appropriate) amounts.
         Expenses
         NetIncome ( Profit )
         Earnings per Share (Basic & Diluted)
-    -- Cashflow statement (TBD)
-    -- Balance sheet (TBD)
+    
+    -- Balance sheet
+        Assets
+            Cash and Cash equivalents
+            Current Assets (includes cash)
+            Longterm Assets (includes goodwill)
+        Liabilities
+            Short-term liabilities
+            Long-term liabilities
+            Stockholder equity
+        (rem: Assets == Liabilities)
+    
+    -- Cashflow statement
+        Net Income (matches from income statement)
+        Cashflow from Operations
+        Net cash from Financing activities
+        Net cash from Investing
+        Cash and cash equivalents (start of period; and end of period)
 
 * Identify handling of quarterly vs annual. Rem: 10-Ks have annual data so need to impute 4Q quarterly data.
 Some data are stocks and don't need adjustment (e.g. Assets, Debt)
+
+* Map other XBRL tags as sub-items to concepts above. This is a tree which may have multiple levels.
 
 * For Spec (4) [Plaintext extraction], look at code in OpenEdgar repo. May be useful.
 
