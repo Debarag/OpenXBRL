@@ -5,6 +5,7 @@ parse to find the accounting terms we want.
 """
 import os
 import json
+import datetime 
 
 
 class AccountingParser() :
@@ -114,12 +115,39 @@ class AccountingParser() :
                     fy_quarter = 0
                 else :
                     fy_quarter = int(fy_quarter[1:2])
-                
+
+                # Assume all entries have same filing date
+                filing_date = item['filed']
+
+                # Calendar Year framing may not exist, if so impute 
+                cy_frame = item.get('frame')
+                if( (cy_frame == None) or (cy_frame == '') ) :
+                    # impute from 'end' (end of period)
+                    # back up date a bit (just in case reporting date goes a little past end-of-quarter)
+                    d        = datetime.datetime.strptime(item['end'], '%Y-%m-%d') - datetime.timedelta(days=8)
+                    cy_frame = f"{d.year}Q{(d.month - 1) // 3 + 1}"
+                else :  # format is CYyyyyQqI
+                    cy_frame = cy_frame[2:7]
+                    if( (len(cy_frame)==5) or (len(cy_frame)==4) ) :
+                        # frame is missing Q; try to fix
+                        cy_year = int(cy_frame[0:4])
+                        d = datetime.datetime.strptime(item['end'], '%Y-%m-%d') - datetime.timedelta(days=8)
+                        if( cy_year == d.year ):
+                            cy_frame = f"{d.year}Q{(d.month - 1) // 3 + 1}"
+                        else :
+                            if( item.get('start') != None ) :
+                                d = datetime.datetime.strptime(item['start'], '%Y-%m-%d') 
+                                if( cy_year == d.year ) :
+                                    cy_frame = f"{d.year}Q4"
+                            if( len(cy_frame) < 6 ) :
+                                print (f"[Warning] CIK:{cik} Form:{form} Year:{fy_year} Quarter:{fy_quarter} Tag:{accounting_parameter} has CY_frame mismatch to end-of-period.")
+
                 index = (fy_year,fy_quarter,form)
                 value = item['val']
                 
-                row = filings.get(index)
-                if( row == None ) :
+                filing = filings.get(index)
+                if( filing == None ) :
+                    # Create new filing record
                     new_q = fy_quarter
                     if( new_q == 0 ) :
                         new_q = 4       # Put yearly results in Q4
@@ -128,10 +156,14 @@ class AccountingParser() :
                                      ,  'FY_quarter'         : fy_quarter 
                                      ,  'form'               : form 
                                      ,  'FY_date'            : f"{fy_year}Q{new_q}"
-                                     ,  accounting_parameter : value
+                                     ,  'CY_date'            : cy_frame
+                                     ,  'CY_filing_date'     : filing_date
                                      }
-                else : 
-                    row[accounting_parameter] = value
+                    filing = filings[index]
+
+                # Add the parameter to the filing record
+                filing[accounting_parameter] = value
+
         # end for
 
         # STEP 2: 
@@ -231,7 +263,8 @@ class AccountingParser() :
         progress_update_at = max(1, int(len(ciks)/50))
         cik_progress       = 0
 
-        column_names = ['FY_year', 'FY_quarter', 'form', 'FY_date'] + AccountingParser._output_params
+        column_names = ['FY_year', 'FY_quarter', 'form', 'FY_date', 'CY_date', 'CY_filing_date'] \
+                        + AccountingParser._output_params
         with open(outputfile, "w") as f:
             s = '"CIK","entityName"'
             for param in column_names:
