@@ -18,6 +18,8 @@ Accounting should clearly distinguish quarterly and annual (if appropriate) amou
 
 6. Python function to find CIK (SEC API has this, we think)
 
+7. The SEC.gov API access from these functions should take into consideration all kinds of restrictions and failure modes from that interface: e.g. there should be a rate-limiter consistent with SEC usage guidelines.  Also, should have checks, and retries, built in to ensure what was requested was actually what was downloaded
+
 
 # Things to do
 * Determine accounting concepts we want and find mappings for them. Put into JSON file.
