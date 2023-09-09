@@ -20,6 +20,8 @@ Accounting should clearly distinguish quarterly and annual (if appropriate) amou
 
 7. The SEC.gov API access from these functions should take into consideration all kinds of restrictions and failure modes from that interface: e.g. there should be a rate-limiter consistent with SEC usage guidelines.  Also, should have checks, and retries, built in to ensure what was requested was actually what was downloaded
 
+8. The functions for Downloaded etc should accept Ticker symbols as inputs as well (should be the default) in addition to the CIKs.  The downloading and setup of the Ticker to CIK can be done as part of an init operation -setting up a location where the mapping may be stored locally.
+
 
 # Things to do
 * Determine accounting concepts we want and find mappings for them. Put into JSON file.
