@@ -7,17 +7,16 @@ needed contingencies--for example, dowload and unzip companyfacts. Also, maybe b
 option is to have it access SEC API unless it finds companyfacts folder -- can suggest downloading 
 for bulk access.
 
-3. API to extract all accounting concepts from filings. Filter by CIK and date. 
-We only deal with 10-Qs and 10-Ks, so filter by form does not seem useful. Accounting
-should clearly distinguish quarterly and annual (if appropriate) amounts. 
+3. Python SDK with functions to extract all accounting concepts from filings. Filter by CIK and date. 
+Accounting should clearly distinguish quarterly and annual (if appropriate) amounts. 
     (a) Accounting concepts mapped to basic financials (our value add)
-    (b) API to also provide the actual filing concepts (why not)
+    (b) Function to also provide the actual filing concepts (why not)
 
-4. API to extract the plaintext of a filing.
+4. Puthon function to extract the plaintext of a filing.
 
-5. API to query filings (just a mapping to SEC API)
+5. Python function to query filings (just a mapping to SEC API)
 
-6. API to find CIK (SEC API has this, we think)
+6. Python function to find CIK (SEC API has this, we think)
 
 
 # Things to do
