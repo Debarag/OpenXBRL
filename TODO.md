@@ -12,7 +12,7 @@ Accounting should clearly distinguish quarterly and annual (if appropriate) amou
     (a) Accounting concepts mapped to basic financials (our value add)
     (b) Function to also provide the actual filing concepts (why not)
 
-4. Puthon function to extract the plaintext of a filing.
+4. Python function to extract the plaintext of a filing.
 
 5. Python function to query filings (just a mapping to SEC API)
 
