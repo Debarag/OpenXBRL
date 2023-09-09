@@ -1,5 +1,5 @@
 # OpenXBRL
-Access any sets of SEC financial filings in XBLR into structured and unstructured data form
+Access any sets of SEC financial filings in XBRL into structured and unstructured data form
 
 Democratizing financial information access is the first step to an efficient and just market where all participants can access and understand key financial data related to publicly traded stocks.  
 The SEC has mandated that all financial filings by regulated publicly traded stocks are done using the XBRL format, and such filings are made available for free using the SEC APIs to accesss the same.
