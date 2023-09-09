@@ -16,7 +16,7 @@ if( test_download ) :
 if( test_parse ) :
     # Assumes companyfacts.zip from SEC has been downloaded and unzipped
     # small test: 
-    ciks = [1750, 1341439, 34088, 28412] # AAR copr, Oracle, ExxonMobil, Comerica
+    ciks = [1750, 1341439, 34088, 28412] # AAR Corp, Oracle, ExxonMobil, Comerica
     ap   = AccountingParser('./sec-data/companyfacts/')
     # full set:
     # ciks = ap.get_CIK_list()

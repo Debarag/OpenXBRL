@@ -10,14 +10,7 @@ import datetime
 
 class AccountingParser() :
 
-    # Basic income statement concepts
-    #################################
-    #  Revenue
-    #    CostOfRevenue
-    #  Gross Profit
-    #  Expenses
-    #  NetIncome ( Profit )
-    #  Earnings per Share (Basic & Diluted)
+    _MAPPED_SUFFIX = "_map_from"
 
     def __init__(self, workingdir : str ) :
         self._workingdir = workingdir
@@ -27,7 +20,10 @@ class AccountingParser() :
         with open(jsonfile, "r") as f:
             self._concept_handling = json.load(f)
 
-        self._output_params = list( self._concept_handling.keys() )
+        self._output_params = list()
+        for m in self._concept_handling.keys():
+            self._output_params.append( m )
+            self._output_params.append( f"{m}{AccountingParser._MAPPED_SUFFIX}")
 
 
     def parse_file( self, filename : str ) -> dict :
@@ -160,9 +156,11 @@ class AccountingParser() :
                 for field_name in concept_handling[entry_name]['map'] :
                     if( row.get(field_name) != None ) :
                         row[entry_name] = row[field_name]
+                        row[f"{entry_name}{AccountingParser._MAPPED_SUFFIX}"] = field_name
                         break
                 if( row[entry_name] == None ) :
                     row[entry_name] = concept_handling[entry_name]['on_missing']
+                    row[f"{entry_name}{AccountingParser._MAPPED_SUFFIX}"] = "Not_Found"
                     if( row[entry_name] == MSG_NaN ) :
                         print (f"[Warning] CIK:{cik} Form:{row['form']} Year:{row['FY_year']} Quarter:{row['FY_quarter']} is missing {entry_name}")
 

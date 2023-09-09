@@ -1,32 +1,32 @@
 { 
-"_Liabilities"      : 
+    "_Liabilities"      : 
     {
-        "map"           : ["Liabilities", "LiabilitiesAndStockholdersEquity"]
+        "map"           : ["Liabilities", "LiabilitiesAndStockholdersEquity", "LiabilitiesCurrent", "LiabilitiesNoncurrent", "OtherLiabilities", "OtherLiabilitiesCurrent", "OtherLiabilitiesNoncurrent"]
     ,   "on_missing"    : "NaN"
     }
 ,   "_Assets"           :
     {
-        "map"           : ["Assets"]
+        "map"           : ["Assets", "AssetsCurrent", "AssetsNoncurrent", "OtherAssetsCurrent", "OtherAssetsNoncurrent", "OtherAssets", "IntangibleAssetsGrossExcludingGoodwill", "IntangibleAssetsNetExcludingGoodwill"]
     ,   "on_missing"    : "NaN"
     }
 ,   "_Profits"          :
     {
-        "map"           : ["GrossProfit", "ProfitLoss", "OperatingIncomeLoss", "NetIncomeLoss"]
+        "map"           : ["GrossProfit", "ProfitLoss", "OperatingIncomeLoss", "NetIncomeLoss", "OperatingIncomeLoss", "ComprehensiveIncomeNetOfTax", "NetIncomeLossIncludingPortionAttributableToNonredeemableNoncontrollingInterest"]
     ,   "on_missing"    : "NaN"
     }
 ,   "_Revenues"             : 
     {
-        "map"           : ["Revenues", "RevenueFromContractWithCustomerExcludingAssessedTax"]
+        "map"           : ["RevenueFromContractWithCustomerExcludingAssessedTax", "Revenues", "SalesRevenueNet", "SalesRevenueServicesGross", "SalesRevenueGoodsNet", "SalesRevenueServicesNet", "OtherSalesRevenueNet", "RevenueFromContractWithCustomerIncludingAssessedTax"]
     ,   "on_missing"    : "NaN"
     }
 ,   "_Costs"                : 
     {
-        "map"           : ["CostsAndExpenses"]
+        "map"           : ["CostOfGoodsSold", "CostOfRevenue", "CostsAndExpenses", "CostOfGoodsAndServicesSold", "CostOfServices"]
     ,   "on_missing"    : "NaN"
     }
 ,   "_Dividends"            : 
     {
-        "map"           : ["DividendsCommonStock", "DividendsCommonStockCash"]
+        "map"           : ["DividendsCommonStock", "DividendsCommonStockCash", "Dividends", "DividendsCash", "CashDividends", "PaymentsOfDividends", "PaymentsOfDividendsCommonStock"]
     ,   "on_missing"    : 0
     }
 }
