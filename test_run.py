@@ -2,9 +2,7 @@
 Sample script to test and run downloaders and parsers.
 """
 
-from edgar_downloader import Downloader
-from edgar_parser     import AccountingParser
-
+from openxbrl import Downloader, AccountingParser
 
 test_download = False
 test_parse    = True

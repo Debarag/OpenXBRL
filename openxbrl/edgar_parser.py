@@ -23,7 +23,8 @@ class AccountingParser() :
         self._workingdir = workingdir
 
         # import field mappings, assume in JSON file in same dir as code
-        with open("concept_handling.json", "r") as f:
+        jsonfile = os.path.join( os.path.dirname(__file__), 'concept_handling.json') 
+        with open(jsonfile, "r") as f:
             self._concept_handling = json.load(f)
 
         self._output_params = list( self._concept_handling.keys() )

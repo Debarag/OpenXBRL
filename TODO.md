@@ -3,7 +3,9 @@
 1. Python package w/ all the standard things (e.g. make installable via pip)
 
 2. Fool-proof operation: Basic access should be easy. Package should handle any 
-needed contingencies--for example, dowload and unzip companyfacts.
+needed contingencies--for example, dowload and unzip companyfacts. Also, maybe better
+option is to have it access SEC API unless it finds companyfacts folder -- can suggest downloading 
+for bulk access.
 
 3. API to extract all accounting concepts from filings. Filter by CIK and date. 
 We only deal with 10-Qs and 10-Ks, so filter by form does not seem useful. Accounting
