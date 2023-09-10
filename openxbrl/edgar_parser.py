@@ -101,10 +101,10 @@ class AccountingParser() :
                     d        = datetime.datetime.strptime(item['end'], '%Y-%m-%d') - datetime.timedelta(days=8)
                     cy_frame = f"{d.year}Q{(d.month - 1) // 3 + 1}"
                 else :  # format is CYyyyyQqI
-                    cy_frame = cy_frame[2:7]
+                    cy_frame = cy_frame[2:8]
                     if( (len(cy_frame)==5) or (len(cy_frame)==4) ) :
                         # frame is missing Q; try to fix
-                        cy_year = int(cy_frame[0:4])
+                        cy_year = int(cy_frame[0:5])
                         d = datetime.datetime.strptime(item['end'], '%Y-%m-%d') - datetime.timedelta(days=8)
                         if( cy_year == d.year ):
                             cy_frame = f"{d.year}Q{(d.month - 1) // 3 + 1}"
