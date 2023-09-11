@@ -266,11 +266,13 @@ class AccountingParser() :
         print( f"Finished parsing. Total filings: {num_rows} ")
 
 
-    def get_CIK_list( self ) -> list :
+    def get_CIK_list( self, min_size : int = 0 ) -> list :
         """
         Read <working_dir>, find all CIK files, extract CIKs for big-enough files
+        Parameters: 
+            min_size       : minimum size (in KB) of files
         """
-        MIN_SIZE = 1000 * 1024
+        min_size   = min_size * 1024
 
         # Get list of all files only in the given directory
         func       = lambda x : os.path.isfile(os.path.join(self._workingdir, x))
@@ -279,7 +281,7 @@ class AccountingParser() :
         cik_list = list()
         for f in files_list :
             sz = os.stat(os.path.join(self._workingdir, f)).st_size
-            if( sz > MIN_SIZE ) :
+            if( sz > min_size ) :
                 cik = int(f[3:13])
                 cik_list.append(cik)
         

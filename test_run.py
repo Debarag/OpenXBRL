@@ -4,8 +4,8 @@ Sample script to test and run downloaders and parsers.
 
 from openxbrl import Downloader, AccountingParser
 
-test_download = True
-test_parse    = False
+test_download = False
+test_parse    = True
 
 if( test_download ) :
   downloader = Downloader(  )
@@ -23,6 +23,6 @@ if( test_parse ) :
     ciks = [1750, 1341439, 34088, 28412] # AAR Corp, Oracle, ExxonMobil, Comerica
     ap   = AccountingParser('./sec-data/companyfacts/')
     # full set:
-    # ciks = ap.get_CIK_list()
+    ciks = ap.get_CIK_list( 5000 )
     ap.parse_files_to_csv( ciks=ciks, outputfile='./sec-data/dataset.csv')
 
