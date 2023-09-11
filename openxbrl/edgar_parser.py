@@ -10,14 +10,7 @@ import datetime
 
 class AccountingParser() :
 
-    # Basic income statement concepts
-    #################################
-    #  Revenue
-    #    CostOfRevenue
-    #  Gross Profit
-    #  Expenses
-    #  NetIncome ( Profit )
-    #  Earnings per Share (Basic & Diluted)
+    _MAPPED_SUFFIX = "_map_from"
 
     def __init__(self, workingdir : str ) :
         self._workingdir = workingdir
@@ -27,7 +20,10 @@ class AccountingParser() :
         with open(jsonfile, "r") as f:
             self._concept_handling = json.load(f)
 
-        self._output_params = list( self._concept_handling.keys() )
+        self._output_params = list()
+        for m in self._concept_handling.keys():
+            self._output_params.append( m )
+            self._output_params.append( f"{m}{AccountingParser._MAPPED_SUFFIX}")
 
 
     def parse_file( self, filename : str ) -> dict :
@@ -105,10 +101,10 @@ class AccountingParser() :
                     d        = datetime.datetime.strptime(item['end'], '%Y-%m-%d') - datetime.timedelta(days=8)
                     cy_frame = f"{d.year}Q{(d.month - 1) // 3 + 1}"
                 else :  # format is CYyyyyQqI
-                    cy_frame = cy_frame[2:7]
+                    cy_frame = cy_frame[2:8]
                     if( (len(cy_frame)==5) or (len(cy_frame)==4) ) :
                         # frame is missing Q; try to fix
-                        cy_year = int(cy_frame[0:4])
+                        cy_year = int(cy_frame[0:5])
                         d = datetime.datetime.strptime(item['end'], '%Y-%m-%d') - datetime.timedelta(days=8)
                         if( cy_year == d.year ):
                             cy_frame = f"{d.year}Q{(d.month - 1) // 3 + 1}"
@@ -146,7 +142,8 @@ class AccountingParser() :
         # STEP 2: 
         # Go through form by form and calculate the accounting concepts we want
         
-        MSG_NaN = "NaN"
+        VALUE_NaN           = "NaN"
+        VALUE_NotAvailable  = "NA"
 
         # Mapping between accounting concepts and fields
         #   Code will try to go down the list for each concept until it finds one
@@ -160,10 +157,12 @@ class AccountingParser() :
                 for field_name in concept_handling[entry_name]['map'] :
                     if( row.get(field_name) != None ) :
                         row[entry_name] = row[field_name]
+                        row[f"{entry_name}{AccountingParser._MAPPED_SUFFIX}"] = field_name
                         break
                 if( row[entry_name] == None ) :
                     row[entry_name] = concept_handling[entry_name]['on_missing']
-                    if( row[entry_name] == MSG_NaN ) :
+                    row[f"{entry_name}{AccountingParser._MAPPED_SUFFIX}"] = "Not_Found"
+                    if( row[entry_name] == VALUE_NaN ) :
                         print (f"[Warning] CIK:{cik} Form:{row['form']} Year:{row['FY_year']} Quarter:{row['FY_quarter']} is missing {entry_name}")
 
             # Public float
@@ -172,9 +171,9 @@ class AccountingParser() :
                 row[entry_name] = row['EntityPublicFloat']
             elif( row['form'].startswith("10-Q") ) :
                 # 10-Q's don't have this value
-                row[entry_name] = "NA"
+                row[entry_name] = VALUE_NotAvailable
             else :
-                row[entry_name] = MSG_NaN
+                row[entry_name] = VALUE_NaN
                 print (f"[Warning] CIK:{cik} Form:{row['form']} Year:{row['FY_year']} is missing EntityPublicFloat")
        
         # end loop on accounting concepts
@@ -189,9 +188,11 @@ class AccountingParser() :
         
             fy_year = row[ 'FY_year' ]
             for series_name in [ '_Profits' ] :
-                year_value  = row[ series_name ]
+                year_value = row[ series_name ]
+                if( year_value == VALUE_NaN ) :
+                    continue
                 
-                # Keep old values as _actual
+                # Keep old values as _annual
                 row[ series_name + '_annual' ] = row[series_name]
 
                 # impute quarterly value on this FY 10-K
@@ -201,11 +202,12 @@ class AccountingParser() :
                     if( q_row == None ) :
                         # try another form
                         q_row = filings.get((fy_year, q, '10-Q/A'))
-                        if( q_row == None ) :
-                            print( f"[Warning] Missing 10-Q form for CIK:{cik} FY_year:{fy_year} for quarter: {q}. Skipping year's {series_name}")
-                            year_value = "NaN"
-                            break
-                    year_value -= q_row[series_name]
+                    if( (q_row == None) or ( q_row[series_name] == VALUE_NaN ) ) :
+                        print( f"[Warning] Missing 10-Q form for CIK:{cik} FY_year:{fy_year} for quarter: {q}. Skipping year's {series_name}")
+                        year_value = VALUE_NaN
+                        break
+                    else :
+                        year_value -= q_row[series_name]
 
                 # Overwrite w/ imputed value
                 row[series_name] = year_value
