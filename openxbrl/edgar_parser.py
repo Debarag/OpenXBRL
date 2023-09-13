@@ -25,6 +25,14 @@ class AccountingParser() :
             self._output_params.append( m )
             self._output_params.append( f"{m}{AccountingParser._MAPPED_SUFFIX}")
 
+        self._filing_id_params =  [     'FY_year'
+                                   ,    'FY_quarter'
+                                   ,    'form'      
+                                   ,    'FY_date'   
+                                   ,    'CY_date'   
+                                   ,    'CY_filing_date' 
+                                  ]
+
 
     def parse_file( self, filename : str ) -> dict :
         """
@@ -221,6 +229,31 @@ class AccountingParser() :
     # end parse_file
 
 
+    def _csv_header(self) -> str :
+        """
+        CSV header fields
+        """
+        column_names = self._filing_id_params + self._output_params
+        s = '"CIK","entityName"'
+        for param in column_names:
+            s += f',"{param}"'
+        return s
+    
+    def _csv_filing(self, cik : int, entityName : str, filing_fields : dict ) -> str :
+        """
+        Takes output of parse_file() and returns CSV row
+        """
+        cols = self._filing_id_params + self._output_params
+        s    = f'{cik},"{entityName}"'
+        for c in cols :
+            param = filing_fields[c]
+            if( type(param) == str ) :
+                s += f',"{param}"'
+            else :
+                s += f',{param}'
+        return s
+
+
     def parse_files_to_csv( self, ciks : list, outputfile : str ) -> None :
         """
         Read files of CIKs in list, call .parse_file() on each one, and produce CSV
@@ -231,39 +264,25 @@ class AccountingParser() :
         progress_update_at = max(1, int(len(ciks)/50))
         cik_progress       = 0
 
-        column_names = ['FY_year', 'FY_quarter', 'form', 'FY_date', 'CY_date', 'CY_filing_date'] \
-                        + self._output_params
+        column_names = self._filing_id_params + self._output_params
         with open(outputfile, "w") as f:
-            s = '"CIK","entityName"'
-            for param in column_names:
-                s = s + f',"{param}"'
-            print(s, file=f)  #header
+            print(self._csv_header(), file=f)  #header
 
             num_rows = 0
             for cik in ciks :
-                filename = f"CIK{cik:010}.json"
-                x        = self.parse_file( filename )
-                base_s   = str(x['CIK']) + ',"' + x['entityName'] + '"'
-                filings  = x['filings']
-                for ndx in filings.keys() :
-                    row = filings[ndx]
-                    s   = base_s 
-                    for c in column_names :
-                        param = row[c]
-                        if( type(param) == str ) :
-                            s = s + f',"{param}"'
-                        else :
-                            s = s + f',{param}'
-
+                x = self.parse_file( f"CIK{cik:010}.json" )
+                for ndx in x['filings'].keys() :
+                    filing_fields = x['filings'][ndx]
+                    s = self._csv_filing( cik, x['entityName'], filing_fields)                
                     print(s, file=f)
                     num_rows += 1
-
                 cik_progress += 1
                 # Show progress
                 if( cik_progress % progress_update_at == 0 ) :
                     print( f"Parsed {cik_progress} out of {len(ciks)}")
 
         print( f"Finished parsing. Total filings: {num_rows} ")
+
 
 
     def get_CIK_list( self, min_size : int = 0 ) -> list :
