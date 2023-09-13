@@ -10,6 +10,24 @@ import time
 
 class Downloader( ) :
 
+  def get_companyfacts( self, cik : int, workingdir : str ) -> str :
+    """
+    Downloads a single companyfacts JSON file to the working dir
+    Parameters: 
+      cik         : CIK id for company
+      workingdir  : path to folder to which do download the file
+    Returns:
+      name of JSON file downloaded
+    """
+    filename  = f"CIK{cik:010}.json" 
+    url       = f"https://data.sec.gov/api/xbrl/companyfacts/{filename}"
+    content   = self._load_url(url)
+
+    outfile   = os.path.join(workingdir, filename)
+    with open(outfile, "wb") as f:
+        f.write(content)
+    return filename
+
 
   def get_urls( self, ciks, forms, from_date, to_date ) -> pandas.DataFrame :
     """
