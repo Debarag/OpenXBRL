@@ -27,6 +27,12 @@ if( test_parse ) :
     ap   = AccountingParser('./sec-data/companyfacts/')
     # full set:
     # ciks = ap.get_CIK_list( 5000 )
+    # larger set:
+    ciks_set = set(ciks)
+    tempciks = ap.get_CIK_list(1000)
+    for i in range(0, len(tempciks), 36):
+       ciks_set.add(tempciks[i])
+    ciks = list(ciks_set)
     ap.parse_files_to_csv( ciks=ciks, outputfile=outputfile)
 
     # Check by reading into dataframe
@@ -39,7 +45,6 @@ if( test_getfacts ) :
   fy_year    = 2021
   fy_quarter = 0
   d = api.get_filing_accounting( cik, fy_year, fy_quarter )
-  df = pandas.DataFrame.from_dict( d, orient='columns' )
-  print(df)
+  print (d)
 
 

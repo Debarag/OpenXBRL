@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Quick Start - OpenXBRL</title>
+</head>
+<body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px;">
+  <h1>Quick Start</h1>
+  <p>This is a quick guide on how to get started with the OpenXBRL package.</p>
+
+  <h2>Installation</h2>
+  <p>The package is not yet available as a <code>pip install</code>, but a manual install is possible.</p>
+  <p>To install, copy the <code>/openxbrl</code> folder into your python working directory. This allows you to
+    import the package.</p>
+  <p>However, your python environment may not have the needed dependent packages to run OpenXBRL. To install those
+    <ol>
+    <li> get the <code>requirements.txt</code> file from the OpenXBRL project and  </li>
+    <li> run <code>pip install -r /[pathto]/requirements.txt</code> where <code>[pathto]</code> is the location of the <code>requirements.txt</code> file. </li>
+    </ol>
+  </p>
+  
+  <h2>Usage</h2>
+  <p>To use OpenXBRL, you can import it into your Python code like this:</p>
+  <pre>from openxbrl import OpenXBRL</pre>
+  <p>OpenXBRL has an API to get a structured set of accounting elements for a particular corporate filing. The API call
+    requires the CIK number for the company, the fiscal year, and the fiscal quarter. The fiscal quarter can be 1, 2, 3, or 0 where 
+    0 indicates the annual (10-K) filing. Form 10-Q data are reported for the first, second, and third quarters. The API looks for 
+    both regular and amended filings (10-K/A and 10-Q/A). If no filing is found, the API call returns a blank response.
+  </p>
+  <p>Sample code:
+  <pre>
+
+    from openxbrl import OpenXBRL
+
+    api = OpenXBRL('./workingdir')
+    filing = api.get_filing_accounting( cik=1705, fiscal_year=2022, fiscal_quarter=3)
+    print( filing )
+
+  </pre>
+  The <code>OpenXBRL()</code> initialization requires a working directory to which downloaded files can be written. 
+  The function returns a python <code>dict</code> which holds the filing's accounting parameters.
+  </p>
+  <hr>
+  <span>&copy; 2023</span>
+</body>
+</html>
