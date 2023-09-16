@@ -23,6 +23,9 @@ class Downloader( ) :
     url       = f"https://data.sec.gov/api/xbrl/companyfacts/{filename}"
     content   = self._load_url(url)
 
+    if( not os.path.exists(workingdir) ) :
+      os.makedirs(workingdir, exist_ok=True)
+
     outfile   = os.path.join(workingdir, filename)
     with open(outfile, "wb") as f:
         f.write(content)
