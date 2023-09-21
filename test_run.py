@@ -7,7 +7,13 @@ import pandas
 
 test_download = False
 test_parse    = False
-test_getfacts = True
+test_getfacts = False
+test_tickers  = True
+
+if( test_tickers ) :
+  downloader = Downloader(  )
+  x = downloader.get_CIKs_from_tickers( ['MSFT', 'ORCL'])
+  print( x )
 
 if( test_download ) :
   downloader = Downloader(  )
@@ -40,8 +46,8 @@ if( test_parse ) :
     print ( df )
 
 if( test_getfacts ) :
-  api        = OpenXBRL( './sec-data/')
-  cik        = 1341439 # Oracle Corp
+  api        = OpenXBRL( './temp-data/')
+  cik        = 1750 # 1341439 # Oracle Corp
   fy_year    = 2021
   fy_quarter = 0
   d = api.get_filing_accounting( cik, fy_year, fy_quarter )

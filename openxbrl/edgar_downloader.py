@@ -10,6 +10,32 @@ import time
 
 class Downloader( ) :
 
+  def get_CIKs_from_tickers( self, tickers = None ) -> dict :
+    """
+    Get CIKs and company names from stock tickers
+    Parameters:
+      tickers   : optional, list of tickers. Get all tickers if None.
+    Returns :
+      Dictionary with tickers as keys
+    """
+    url  = f"https://www.sec.gov/files/company_tickers.json"
+    data = json.loads(self._load_url(url))
+    out  = dict()
+    for d in data:
+      ticker      = data[d]['ticker'].upper()
+      out[ticker] = {'CIK' : int(data[d]['cik_str']), 'title' : data[d]['title'] }
+    
+    if( tickers == None ) :
+      return out
+    else :
+      xout = dict()
+      for t in tickers:
+        x = out.get(t.upper())
+        if( x != None ) :
+          xout[t.upper()] = x
+      return xout
+
+
   def get_companyfacts( self, cik : int, workingdir : str ) -> str :
     """
     Downloads a single companyfacts JSON file to the working dir
