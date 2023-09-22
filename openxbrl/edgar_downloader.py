@@ -58,6 +58,32 @@ class Downloader( ) :
     return filename
 
 
+  def get_single_filing(self, cik : int, accession_number : str) -> str :
+    """
+    Access SEC EDGAR to pull down a filing for a particular CIK, by Accession Number
+    Parameters:
+      cik   : CIK of company
+      accession_number : The ID of the filing. This must be found beforehand.
+    Returns :
+      The raw text of the filing (includes all HTML and XBRL)
+    """
+
+    # Find primary document
+    ####
+    url  = f"https://data.sec.gov/submissions/CIK{cik:010}.json"
+    data = json.loads(self._load_url(url))
+
+    # Convert JSON to dataframe for easier use
+    recents = pandas.DataFrame(data['filings']['recent'])
+    df      = recents.loc[recents['accessionNumber']==accession_number]
+    
+    primaryDocument = df.iloc[0]['primaryDocument']
+    acc_num         = accession_number.replace("-", "")
+
+    url = f"https://www.sec.gov/Archives/edgar/data/{cik:010}/{acc_num}/{primaryDocument}"
+    return self._load_url(url)
+
+
   def get_urls( self, ciks, forms, from_date, to_date ) -> pandas.DataFrame :
     """
     Returns DataFrame with URLs to Edgar data based on query criteria
@@ -90,11 +116,12 @@ class Downloader( ) :
 
         for i in range(len(df)) :
           row = df.iloc[i]
+          primaryDocument = row['primaryDocument']
           accessionNumber = row['accessionNumber'].replace("-", "")
           filename        = f"{row['accessionNumber']}.txt"
           url = f"https://www.sec.gov/Archives/edgar/data/{cik:010}/{accessionNumber}/{filename}"
 
-          sec_data[ (cik, form, row['filingDate']) ] = { 'URL': url, 'filename' : filename }
+          sec_data[ (cik, form, row['filingDate']) ] = { 'URL': url, 'filename' : filename, 'filing_filename' : primaryDocument }
 
     # Convert dict to DataFrame
     df = pandas.DataFrame.from_dict( sec_data, orient='index' )

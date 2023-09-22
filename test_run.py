@@ -5,10 +5,16 @@ Sample script to test and run downloaders and parsers.
 from openxbrl import Downloader, AccountingParser, OpenXBRL
 import pandas
 
-test_download = False
-test_parse    = False
-test_getfacts = False
-test_tickers  = True
+test_download   = False
+test_parse      = False
+test_getfacts   = False
+test_tickers    = False
+test_filing_PDF = True
+
+openXBRL = OpenXBRL('./sec-data/')
+
+if( test_filing_PDF ) :
+  openXBRL.get_filing_as_pdf(1341439, 2022, 3, 'orcl_pdf.pdf')
 
 if( test_tickers ) :
   downloader = Downloader(  )
@@ -38,7 +44,7 @@ if( test_parse ) :
     tempciks = ap.get_CIK_list(1000)
     for i in range(0, len(tempciks), 36):
        ciks_set.add(tempciks[i])
-    ciks = list(ciks_set)
+    # ciks = list(ciks_set)
     ap.parse_files_to_csv( ciks=ciks, outputfile=outputfile)
 
     # Check by reading into dataframe

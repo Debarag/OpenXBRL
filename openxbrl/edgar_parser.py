@@ -140,6 +140,7 @@ class AccountingParser() :
                                      ,  'FY_date'            : f"{fy_year}Q{new_q}"
                                      ,  'CY_date'            : cy_frame
                                      ,  'CY_filing_date'     : filing_date
+                                     ,  'accession_num'      : item['accn']
                                      }
                     filing = filings[index]
 
