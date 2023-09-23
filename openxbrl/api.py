@@ -37,8 +37,8 @@ class OpenXBRL() :
         else :
             form = '10-Q'
         filing = filings.get((fiscal_year, fiscal_quarter, form))
-        if( filing == None ) :
-            form += '/A'    # look for amended
+        form   += '/A'    # look for amended
+        if( filings.get((fiscal_year, fiscal_quarter, form)) != None ) :
             filing = filings.get((fiscal_year, fiscal_quarter, form))
         
         if( filing != None ) :

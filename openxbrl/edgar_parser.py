@@ -20,6 +20,9 @@ class AccountingParser() :
         with open(jsonfile, "r") as f:
             self._concept_handling = json.load(f)
 
+        # find concepts where we calculate/impute quarter's value
+        self._concepts_to_calc_quarter = [key for key, value in self._concept_handling.items() if "calc_quarter" in value and value["calc_quarter"] is True]
+        
         self._output_params = list()
         for m in self._concept_handling.keys():
             self._output_params.append( m )
@@ -31,6 +34,7 @@ class AccountingParser() :
                                    ,    'FY_date'   
                                    ,    'CY_date'   
                                    ,    'CY_filing_date' 
+                                   ,    'accession_num'
                                   ]
 
 
@@ -196,7 +200,7 @@ class AccountingParser() :
                 continue 
         
             fy_year = row[ 'FY_year' ]
-            for series_name in [ '_Profits' ] :
+            for series_name in self._concepts_to_calc_quarter:
                 year_value = row[ series_name ]
                 if( year_value == VALUE_NaN ) :
                     continue
@@ -207,10 +211,10 @@ class AccountingParser() :
                 # impute quarterly value on this FY 10-K
                 #  by subtracting the FY 10-Q values from the year's
                 for q in range(1,4) :
-                    q_row = filings.get((fy_year, q, '10-Q'))
+                    # look for amended first
+                    q_row = filings.get((fy_year, q, '10-Q/A'))
                     if( q_row == None ) :
-                        # try another form
-                        q_row = filings.get((fy_year, q, '10-Q/A'))
+                        q_row = filings.get((fy_year, q, '10-Q'))
                     if( (q_row == None) or ( q_row[series_name] == VALUE_NaN ) ) :
                         print( f"[Warning] Missing 10-Q form for CIK:{cik} FY_year:{fy_year} for quarter: {q}. Skipping year's {series_name}")
                         year_value = VALUE_NaN

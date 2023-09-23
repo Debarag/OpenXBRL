@@ -13,6 +13,13 @@
     {
         "map"           : ["GrossProfit", "ProfitLoss", "OperatingIncomeLoss", "NetIncomeLoss", "OperatingIncomeLoss", "ComprehensiveIncomeNetOfTax", "NetIncomeLossIncludingPortionAttributableToNonredeemableNoncontrollingInterest"]
     ,   "on_missing"    : "NaN"
+    ,   "calc_quarter"  : true
+    }
+,   "_EarningsPerShare" :
+    {
+        "map"           : ["EarningsPerShareBasic"]
+    ,   "on_missing"    : "NaN"
+    ,   "calc_quarter"  : true
     }
 ,   "_Revenues"             : 
     {

@@ -67,22 +67,43 @@ class Downloader( ) :
     Returns :
       The raw text of the filing (includes all HTML and XBRL)
     """
+    url_list = self.get_filing_URLs( cik, [accession_number] )
+    url      = url_list[0]
+    if( url == None ) :
+      return None
+    return self._load_url(url)
 
-    # Find primary document
-    ####
+
+  def get_filing_URLs(self, cik : int, accession_numbers : list) -> list :
+    """
+    Get URLs for SEC EDGAR to pull down filings for a particular CIK, by Accession Number
+    Parameters:
+      cik   : CIK of company
+      accession_numbers : A list of IDs of the filing. This must be found beforehand.
+    Returns :
+      List of URLs of the primary document for each accession number.
+    """
     url  = f"https://data.sec.gov/submissions/CIK{cik:010}.json"
     data = json.loads(self._load_url(url))
 
     # Convert JSON to dataframe for easier use
     recents = pandas.DataFrame(data['filings']['recent'])
-    df      = recents.loc[recents['accessionNumber']==accession_number]
-    
-    primaryDocument = df.iloc[0]['primaryDocument']
-    acc_num         = accession_number.replace("-", "")
 
-    url = f"https://www.sec.gov/Archives/edgar/data/{cik:010}/{acc_num}/{primaryDocument}"
-    return self._load_url(url)
+    url_list = list()
+    for accession_number in accession_numbers :
+      df = recents.loc[recents['accessionNumber']==accession_number]
 
+      if( len(df) == 0 ) :
+        print(f"[ERROR] Cannot find filing for this CIK: {cik}, Accession number: {accession_number}")
+        url_list.append(None)
+      else :
+        primaryDocument = df.iloc[0]['primaryDocument']
+        acc_num         = accession_number.replace("-", "")
+
+        url = f"https://www.sec.gov/Archives/edgar/data/{cik:010}/{acc_num}/{primaryDocument}"
+        url_list.append(url)
+    return url_list
+  
 
   def get_urls( self, ciks, forms, from_date, to_date ) -> pandas.DataFrame :
     """

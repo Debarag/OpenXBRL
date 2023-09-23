@@ -14,7 +14,7 @@ test_filing_PDF = True
 openXBRL = OpenXBRL('./sec-data/')
 
 if( test_filing_PDF ) :
-  openXBRL.get_filing_as_pdf(1341439, 2022, 3, 'orcl_pdf.pdf')
+  openXBRL.get_filing_as_pdf(1341439, 2023, 1, './sec-data/orcl_pdf.pdf')
 
 if( test_tickers ) :
   downloader = Downloader(  )
