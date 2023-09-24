@@ -58,7 +58,8 @@ class AccountingParser() :
                 print( '[ERROR] CIK: {cik} does not have US-GAAP or IFRS-FULL data.')
                 return None
 
-        # STEP 1: Transform JSON to dict w/ filings
+        # STEP 1: 
+        # Transform JSON to dict w/ filings
         filings = dict()
 
         cik         = data['cik']
@@ -102,31 +103,8 @@ class AccountingParser() :
                 else :
                     fy_quarter = int(fy_quarter[1:2])
 
-                # Assume all entries have same filing date
-                filing_date = item['filed']
-
-                # Calendar Year framing may not exist, if so impute 
+                # Store CY framing for later attempt to process
                 cy_frame = item.get('frame')
-                if( (cy_frame == None) or (cy_frame == '') ) :
-                    # impute from 'end' (end of period)
-                    # back up date a bit (just in case reporting date goes a little past end-of-quarter)
-                    d        = datetime.datetime.strptime(item['end'], '%Y-%m-%d') - datetime.timedelta(days=8)
-                    cy_frame = f"{d.year}Q{(d.month - 1) // 3 + 1}"
-                else :  # format is CYyyyyQqI
-                    cy_frame = cy_frame[2:8]
-                    if( (len(cy_frame)==5) or (len(cy_frame)==4) ) :
-                        # frame is missing Q; try to fix
-                        cy_year = int(cy_frame[0:5])
-                        d = datetime.datetime.strptime(item['end'], '%Y-%m-%d') - datetime.timedelta(days=8)
-                        if( cy_year == d.year ):
-                            cy_frame = f"{d.year}Q{(d.month - 1) // 3 + 1}"
-                        else :
-                            if( item.get('start') != None ) :
-                                d = datetime.datetime.strptime(item['start'], '%Y-%m-%d') 
-                                if( cy_year == d.year ) :
-                                    cy_frame = f"{d.year}Q4"
-                            if( len(cy_frame) < 6 ) :
-                                print (f"[Warning] CIK:{cik} Form:{form} Year:{fy_year} Quarter:{fy_quarter} Tag:{accounting_parameter} has CY_frame mismatch to end-of-period.")
 
                 index = (fy_year,fy_quarter,form)
                 value = item['val']
@@ -143,16 +121,79 @@ class AccountingParser() :
                                      ,  'form'               : form 
                                      ,  'FY_date'            : f"{fy_year}Q{new_q}"
                                      ,  'CY_date'            : cy_frame
-                                     ,  'CY_filing_date'     : filing_date
+                                     ,  'CY_filing_date'     : item['filed']
+                                     ,  'CY_end_report_date' : item['end']
                                      ,  'accession_num'      : item['accn']
                                      }
                     filing = filings[index]
 
                 # Add the parameter to the filing record
                 filing[accounting_parameter] = value
-        # end for 
+        # end for JSON -> filings
 
         # STEP 2: 
+        # Try to get the correct calendar dates for filings
+
+        for ndx in filings.keys() :
+            row = filings[ndx]
+
+            fy_year    = row['FY_year']
+            fy_quarter = row['FY_quarter']
+            # Calendar Year framing may not exist, if so impute 
+            #  Also, it may be wrong, try to fix
+            # 
+            # Get 'end' (end-of-period) in quarterly format 
+            #   NOTE: Move back a few days, in case reporting end is past quarter end
+            cy_frame = row['CY_date']
+            d        = datetime.datetime.strptime(row['CY_end_report_date'], '%Y-%m-%d') - datetime.timedelta(days=5)
+            cy_end   = f"{d.year}Q{(d.month - 1) // 3 + 1}"
+
+            if( (cy_frame == None) or (cy_frame == '') ) :
+                # impute from 'end' (end of period)
+                cy_frame = cy_end
+            else :  # format is CYyyyyQqI
+                cy_frame = cy_frame[2:8]
+                # Can be yyyy or yyyyQ
+                if( (len(cy_frame)==4) or (len(cy_frame)==5) )  :
+                    # frame is missing Q; try to fix
+                    cy_year = int(cy_frame[0:5])
+                    if( fy_quarter == 0 ) : 
+                        # This is 10-K
+                        cy_frame = f"{cy_year}Q4"
+                    else :
+                        cy_frame = cy_end
+                elif( len(cy_frame) < 4 ) :
+                    # something odd is here, set bad cy_frame to catch later
+                    cy_frame = "9999Q1"
+            
+            # Validate CY frame -- fix if incompatible
+            #   Check how far from filing date
+            filing_date     = datetime.datetime.strptime(row['CY_filing_date'], '%Y-%m-%d')
+            filing_quarters = filing_date.year * 4 + (filing_date.month  - 1) // 3 + 1
+            cy_quarters     = int(cy_frame[0:4])*4 + int(cy_frame[5:6])
+            if( filing_quarters <= cy_quarters ) :
+                # Filing before CY_date --> use filing date
+                cy_frame = f"{filing_date.year}Q{(filing_date.month - 1) // 3 + 1}"
+            else : 
+                # Filing is after CY_date
+                #  * Could be FY != CY
+                #  * Filing is late ?
+                new_q       = (fy_quarter if fy_quarter != 0 else 4)
+                fy_quarters = fy_year*4 + new_q
+                if( filing_quarters - fy_quarters < 5 ) :
+                    # assume FY==CY
+                    cy_frame = f"{fy_year}Q{new_q}"
+                else :
+                    # TBD - FIX
+                    #  Use 1 quarter before filing date 
+                    filing_quarters -= 2        # rem quarters are not mods
+                    cy_frame = f"{filing_quarters // 4}Q{filing_quarters % 4}"
+
+            # Write CY framing
+            row['CY_date'] = cy_frame
+        # end loop for CY_date    
+
+        # STEP 3: 
         # Go through form by form and calculate the accounting concepts we want
         
         VALUE_NaN           = "NaN"
@@ -191,7 +232,8 @@ class AccountingParser() :
        
         # end loop on accounting concepts
 
-        # STEP 3: Impute certain quarterly data
+        # STEP 4: 
+        # Impute certain quarterly data
         for ndx in filings.keys() :
             row = filings[ndx]
 

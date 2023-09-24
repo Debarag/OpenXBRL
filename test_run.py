@@ -6,10 +6,10 @@ from openxbrl import Downloader, AccountingParser, OpenXBRL
 import pandas
 
 test_download   = False
-test_parse      = False
+test_parse      = True
 test_getfacts   = False
 test_tickers    = False
-test_filing_PDF = True
+test_filing_PDF = False
 
 openXBRL = OpenXBRL('./sec-data/')
 
@@ -35,7 +35,8 @@ if( test_parse ) :
     outputfile = './sec-data/dataset.csv'
     # Assumes companyfacts.zip from SEC has been downloaded and unzipped
     # small test: 
-    ciks = [1750, 1341439, 34088, 28412] # AAR Corp, Oracle, ExxonMobil, Comerica
+    ciks = [1800]#[1750, 1341439, 34088, 28412] # AAR Corp, Oracle, ExxonMobil, Comerica
+    Downloader().get_companyfacts(1800, './sec-data/companyfacts')
     ap   = AccountingParser('./sec-data/companyfacts/')
     # full set:
     # ciks = ap.get_CIK_list( 5000 )
