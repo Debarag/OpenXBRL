@@ -6,6 +6,8 @@ import requests
 import json
 import pandas
 import time 
+import re
+from bs4 import BeautifulSoup
 
 
 class Downloader( ) :
@@ -34,6 +36,25 @@ class Downloader( ) :
         if( x != None ) :
           xout[t.upper()] = x
       return xout
+
+
+  def extract_filing_text_from_url( self, url : str ) -> str :
+    """
+    Filters out tags and returns plain text 
+    Parameters:
+      url   : valid SEC EDGAR url of primary filing document
+    Returns:
+      string of plain text of the filing
+    """
+    text = str(self._load_url( url ))
+    # Assume can ignore all before Table of Contents
+    #   This skips some XBRL and standard title page
+    text = text[text.find("Table of Contents"):]
+    
+    soup  = BeautifulSoup(text, 'html.parser')
+    plain = soup.get_text()
+
+    return plain
 
 
   def get_companyfacts( self, cik : int, workingdir : str ) -> str :

@@ -6,12 +6,18 @@ from openxbrl import Downloader, AccountingParser, OpenXBRL
 import pandas
 
 test_download   = False
-test_parse      = True
+test_parse      = False
 test_getfacts   = False
 test_tickers    = False
 test_filing_PDF = False
 
 openXBRL = OpenXBRL('./sec-data/')
+
+if( True) :
+   downloader = Downloader()
+   url = "https://www.sec.gov/Archives/edgar/data/0000066740/000155837021000737/mmm-20201231x10k.htm"
+   text = downloader.extract_filing_text_from_url(url)
+   print ( text)
 
 if( test_filing_PDF ) :
   openXBRL.get_filing_as_pdf(1341439, 2023, 1, './sec-data/orcl_pdf.pdf')

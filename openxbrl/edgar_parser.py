@@ -187,7 +187,7 @@ class AccountingParser() :
                     # TBD - FIX
                     #  Use 1 quarter before filing date 
                     filing_quarters -= 2        # rem quarters are not mods
-                    cy_frame = f"{filing_quarters // 4}Q{filing_quarters % 4}"
+                    cy_frame = f"{filing_quarters // 4}Q{filing_quarters % 4 + 1}"
 
             # Write CY framing
             row['CY_date'] = cy_frame
