@@ -219,5 +219,22 @@ class Downloader( ) :
       raise Exception(f"Failed to fetch data from URL: {url}")
     return response.content
   # end _load_url()
+
+  def _load_url_text(self, url : str) :
+    """
+    Helper function to download URLs from EDGAR
+    """
+    # Wait a bit as per SEC Edgar rate use requirements
+    time.sleep(0.11)
+  
+    response = requests.get(url,headers={"User-Agent": "Mozilla/5.0"})
+    if response.status_code != 200:
+      raise Exception(f"Failed to fetch data from URL: {url}")
+    return response.text
+  #end _load_url_text()
+
+  
+
+
            
 # end Downloader()
