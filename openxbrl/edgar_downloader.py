@@ -38,7 +38,8 @@ class Downloader( ) :
       return xout
 
 
-  def extract_filing_text_from_url( self, url : str ) -> str :
+
+  def extract_filing_html_from_url( self, url : str ) -> str :
     """
     Filters out tags and returns plain text 
     Parameters:
@@ -49,12 +50,16 @@ class Downloader( ) :
     text = str(self._load_url( url ))
     # Assume can ignore all before Table of Contents
     #   This skips some XBRL and standard title page
-    text = text[text.find("Table of Contents"):]
+    soup  = BeautifulSoup(text, 'lxml')
     
-    soup  = BeautifulSoup(text, 'html.parser')
-    plain = soup.get_text()
+    # Find all non-HTML tags
+    for tag in soup.find_all(lambda tag: tag.name.startswith('ix')):
+        # Extract the tag from the document tree
+        tag.extract()
 
-    return plain
+    return soup.prettify()
+
+
 
   def generate_flat_html( self, url : str ) -> str :
     """
@@ -67,14 +72,13 @@ class Downloader( ) :
     # Assume can ignore all before Table of Contents
     # This skips some XBRL and standard title page
 
-    raw_file = (self._load_url( url ))
-    soup = BeautifulSoup(raw_file,"html")
+    raw_file = (self._load_url_text( url ))
 
     doc_start_pattern = re.compile(r'<DOCUMENT>')
-    doc_end_pattern = re.compile(r'</DOCUMENT>')
+    doc_end_pattern   = re.compile(r'</DOCUMENT>')
 
     type_pattern = re.compile(r'<TYPE>[^\n]+')
-    #Either 10-K or 10-Q
+    # We want 10-K, 10-K/A or 10-Q, 10-Q/A
 
     doc_start_is = [x.end() for x in doc_start_pattern.finditer(raw_file)]
     doc_end_is = [x.start() for x in doc_end_pattern.finditer(raw_file)]
@@ -87,38 +91,32 @@ class Downloader( ) :
     docType = ''
     file_name = ''
     for doc_type, doc_start, doc_end in zip(doc_types, doc_start_is, doc_end_is):
-        if doc_type == '10-K':
+        # Check for 10-K, 10-K/A, 10-Q, 10-Q/A
+        if ( "10-K" in doc_type ):
             document[doc_type] = raw_file[doc_start:doc_end]
             docType = "10-K"
             match = 10
             #skips Table of Contents
-            file_name = 'Output_10k.html'
-            #return html for 10-K files
             
-        elif doc_type == '10-Q':
+        elif ( "10-Q" in doc_type ):
             document[doc_type] = raw_file[doc_start:doc_end]
             docType = "10-Q"
             match = 3
             #skips Table of Contents
-            file_name = 'Output_10q.html'
-            #return html for 10-Q files
+
+    # Cannot process other types of forms
+    if( docType == '' ) :
+      return None
 
     regex = re.compile(r'(>Item(\s|&#160;|&nbsp;)(1)\.{0,1})|(ITEM\s(1))')
 
     match_positions = [match.start() for match in regex.finditer(document[docType])]
 
     document_content = document[docType][match_positions[match]:]
+    document_content = BeautifulSoup(document_content, 'lxml')
+    refined_content  = document_content.prettify()
 
-    document_content  = BeautifulSoup(document_content, 'lxml')
-
-    refined_content = document_content.prettify()
-    
-    print(refined_content)
-    with open(file_name, "w",encoding="utf-8") as text_file:
-        text_file.write(refined_content)
-    #save as html file
-        
-    text_file.close()
+    return refined_content    
     
     
     

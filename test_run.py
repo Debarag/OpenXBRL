@@ -16,8 +16,16 @@ openXBRL = OpenXBRL('./sec-data/')
 if( True) :
    downloader = Downloader()
    url = "https://www.sec.gov/Archives/edgar/data/0000066740/000155837021000737/mmm-20201231x10k.htm"
-   text = downloader.extract_filing_text_from_url(url)
-   print ( text)
+   url_filing = "https://www.sec.gov/Archives/edgar/data/0000001750/000110465923035153/0001104659-23-035153.txt"
+   text = downloader.generate_flat_html(url_filing)
+   if( text == None ):
+      text = ""
+   text = downloader.extract_filing_html_from_url( url )
+   text = text.encode( encoding="ascii", errors="ignore").decode( encoding="ascii", errors="ignore")
+   print ( text )
+   test_file = './sec-data/test_html_extract.html'
+   with open(test_file, "wt") as f:
+      f.write( text )
 
 if( test_filing_PDF ) :
   openXBRL.get_filing_as_pdf(1341439, 2023, 1, './sec-data/orcl_pdf.pdf')
