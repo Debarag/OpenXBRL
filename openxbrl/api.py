@@ -1,7 +1,7 @@
 """
 Main access point for OpenXBRL api
 """
-from openxbrl import AccountingParser, Downloader
+from openxbrl import AccountingParser, Downloader, format_transformer
 import os
 
 class OpenXBRL() :
@@ -37,8 +37,8 @@ class OpenXBRL() :
         else :
             form = '10-Q'
         filing = filings.get((fiscal_year, fiscal_quarter, form))
-        if( filing == None ) :
-            form += '/A'    # look for amended
+        form   += '/A'    # look for amended
+        if( filings.get((fiscal_year, fiscal_quarter, form)) != None ) :
             filing = filings.get((fiscal_year, fiscal_quarter, form))
         
         if( filing != None ) :
@@ -46,3 +46,22 @@ class OpenXBRL() :
             filing['entityName'] = result['entityName']
 
         return filing
+
+
+    def get_filing_as_pdf( self, cik : int, fiscal_year : int, fiscal_quarter : int, outputfile : str ) :
+        """
+        Write PDF of a corporate filing.
+        Parameters: 
+            cik             : CIK identifier of the company
+            fiscal_year     : Fiscal year of the filing
+            fiscal_quarter  : Fiscal quarter of the filing. 
+                            NOTE: Use fiscal_quarter = 0 to get the annual (10-K) filing
+            outputfile      : Name of PDF file to write
+        """
+        filing = self.get_filing_accounting( cik, fiscal_year, fiscal_quarter )
+
+        accession_number = filing['accession_num']
+        
+        downloader = Downloader()
+        content    = downloader.get_single_filing(cik, accession_number)
+        format_transformer.convert_filing_to_pdf( content, outputfile )
