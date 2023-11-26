@@ -11,7 +11,7 @@
     }
 ,   "_Profits"          :
     {
-        "map"           : ["ProfitLoss", "NetIncomeLoss", "NetIncomeLossAvailableToCommonStockholdersBasic"]
+        "map"           : ["NetIncomeLoss", "ProfitLoss", "NetIncomeLossAvailableToCommonStockholdersBasic", "ComprehensiveIncomeNetOfTax", "IncomeLossFromContinuingOperations", "IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments", "NetIncomeLossIncludingPortionAttributableToNonredeemableNoncontrollingInterest"]
     ,   "on_missing"    : "NaN"
     ,   "calc_quarter"  : true
     }
@@ -23,7 +23,7 @@
     }
 ,   "_Revenues"             : 
     {
-        "map"           : ["RevenueFromContractWithCustomerExcludingAssessedTax", "Revenues", "SalesRevenueNet", "SalesRevenueServicesGross", "SalesRevenueGoodsNet", "SalesRevenueServicesNet", "OtherSalesRevenueNet", "RevenueFromContractWithCustomerIncludingAssessedTax"]
+        "map"           : ["RevenueFromContractWithCustomerExcludingAssessedTax", "Revenues", "RevenueFromContractWithCustomerIncludingAssessedTax", "InterestAndDividendIncomeOperating", "RegulatedAndUnregulatedOperatingRevenue", "NoninterestIncome", "OperatingLeaseLeaseIncome", "RegulatedOperatingRevenue", "RevenuesAndOtherIncome", "RevenuesNetOfInterestExpense", "TotalRevenuesIncludingRevenueGeneratedByVariableInterestEntities"]
     ,   "on_missing"    : "NaN"
     }
 ,   "_Costs"                : 
